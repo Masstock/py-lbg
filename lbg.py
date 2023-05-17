@@ -7,11 +7,15 @@ import math
 from functools import reduce
 from collections import defaultdict
 
+from typing import Tuple, Collection, List
+
 _size_data = 0
 _dim = 0
 
 
-def generate_codebook(data, size_codebook, epsilon=0.00001):
+def generate_codebook(data: Collection[Collection[float]],
+                      size_codebook: int,
+                      epsilon: float = 0.00001) -> Tuple[List[List[float]], List[int], List[float]]:
     """
     Generate codebook of size <size_codebook> with convergence value <epsilon>. Will return a tuple with the
     generated codebook, a vector with absolute weights and a vector with relative weights (the weight denotes how many
@@ -49,7 +53,10 @@ def generate_codebook(data, size_codebook, epsilon=0.00001):
     return codebook, codebook_abs_weights, codebook_rel_weights
 
 
-def split_codebook(data, codebook, epsilon, initial_avg_dist):
+def split_codebook(data: Collection[Collection[float]],
+                   codebook: List[Tuple[float]],
+                   epsilon: float,
+                   initial_avg_dist: float) -> Tuple[List[List[float]], List[int], List[float], float]:
     """
     Split the codebook so that each codevector in the codebook is split into two.
     :param data: input data
@@ -81,9 +88,12 @@ def split_codebook(data, codebook, epsilon, initial_avg_dist):
     num_iter = 0
     while err > epsilon:
         # find closest codevectors for each vector in data (find the proximity of each codevector)
-        closest_c_list = [None] * _size_data    # list that contains the nearest codevector for each input data vector
-        vecs_near_c = defaultdict(list)         # list with codevector index -> input data vector mapping
-        vec_idxs_near_c = defaultdict(list)     # list with codevector index -> input data index mapping
+        # list that contains the nearest codevector for each input data vector
+        closest_c_list = [None] * _size_data
+        # list with codevector index -> input data vector mapping
+        vecs_near_c = defaultdict(list)
+        # list with codevector index -> input data index mapping
+        vec_idxs_near_c = defaultdict(list)
         for i, vec in enumerate(data):  # for each input vector
             min_dist = None
             closest_c_index = None
@@ -97,13 +107,16 @@ def split_codebook(data, codebook, epsilon, initial_avg_dist):
             vec_idxs_near_c[closest_c_index].append(i)
 
         # update codebook: recalculate each codevector so that it sits in the center of the points in their proximity
-        for i_c in range(len_codebook): # for each codevector index
-            vecs = vecs_near_c.get(i_c) or []   # get its proximity input vectors
+        for i_c in range(len_codebook):  # for each codevector index
+            # get its proximity input vectors
+            vecs = vecs_near_c.get(i_c) or []
             num_vecs_near_c = len(vecs)
             if num_vecs_near_c > 0:
-                new_c = avg_vec_of_vecs(vecs, _dim)     # calculate the new center
+                # calculate the new center
+                new_c = avg_vec_of_vecs(vecs, _dim)
                 codebook[i_c] = new_c                   # update in codebook
-                for i in vec_idxs_near_c[i_c]:          # update in input vector index -> codevector mapping list
+                # update in input vector index -> codevector mapping list
+                for i in vec_idxs_near_c[i_c]:
                     closest_c_list[i] = new_c
 
                 # update the weights
@@ -124,7 +137,9 @@ def split_codebook(data, codebook, epsilon, initial_avg_dist):
     return codebook, abs_weights, rel_weights, avg_dist
 
 
-def avg_vec_of_vecs(vecs, dim=None, size=None):
+def avg_vec_of_vecs(vecs: Collection[Collection[float]],
+                    dim: int = None,
+                    size: int = None) -> List[float]:
     """
     Calculcate average vector (center vector) for input vectors <vecs>.
     :param vecs: input vectors
@@ -142,7 +157,7 @@ def avg_vec_of_vecs(vecs, dim=None, size=None):
     return avg_vec
 
 
-def new_codevector(c, e):
+def new_codevector(c: Collection[float], e: float) -> List[float]:
     """
     Create a new codevector based on <c> but moved by factor <e>
     :param c: base codevector
@@ -152,7 +167,9 @@ def new_codevector(c, e):
     return [x * (1.0 + e) for x in c]
 
 
-def avg_distortion_c0(c0, data, size=None):
+def avg_distortion_c0(c0: Collection[float],
+                      data: Collection[Collection[float]],
+                      size: int = None) -> float:
     """
     Average distortion of <c0> in relation to <data> (i.e. how good does <c0> describe <data>?).
     :param c0: comparison vector
@@ -167,7 +184,9 @@ def avg_distortion_c0(c0, data, size=None):
                   0.0)
 
 
-def avg_distortion_c_list(c_list, data, size=None):
+def avg_distortion_c_list(c_list: Collection[List[float]],
+                          data: Collection[Tuple[float]],
+                          size: int = None) -> float:
     """
     Average distortion between input samples <data> and a list <c_list> that contains a codevector for each point in
     <data>.
@@ -183,7 +202,7 @@ def avg_distortion_c_list(c_list, data, size=None):
                   0.0)
 
 
-def euclid_squared(a, b):
+def euclid_squared(a: Collection[float], b: Collection[float]) -> float:
     return sum((x_a - x_b) ** 2 for x_a, x_b in zip(a, b))
 
 
