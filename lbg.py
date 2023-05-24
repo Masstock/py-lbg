@@ -87,7 +87,6 @@ def split_codebook(data: Collection[Collection[float]],
     err = epsilon + 1
     num_iter = 0
     while err > epsilon:
-        print("LBG iteration: {} (epsilon: {})".format(err, epsilon))
 
         # find closest codevectors for each vector in data (find the proximity of each codevector)
         # list that contains the nearest codevector for each input data vector
@@ -133,6 +132,9 @@ def split_codebook(data: Collection[Collection[float]],
         err = (prev_avg_dist - avg_dist) / prev_avg_dist
         # print(closest_c_list)
         # print('> iteration', num_iter, 'avg_dist', avg_dist, 'prev_avg_dist', prev_avg_dist, 'err', err)
+
+        print("LBG iteration {}, avg_dist {}, err {}, (epsilon: {})"
+              .format(num_iter, avg_dist, err, epsilon))
 
         num_iter += 1
 
